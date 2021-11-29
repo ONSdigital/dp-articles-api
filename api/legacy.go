@@ -3,26 +3,31 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/ONSdigital/log.go/v2/log"
 )
 
-// TODO: remove hello world handler
-const helloMessage = "Hello, World!"
-
-type HelloResponse struct {
-	Message string `json:"message,omitempty"`
+type LegacyResponse struct {
+	URL string `json:"url,omitempty"`
 }
 
-// HelloHandler returns function containing a simple hello world example of an api handler
-func HelloHandler(ctx context.Context) http.HandlerFunc {
-	log.Info(ctx, "api contains example endpoint, remove hello.go as soon as possible")
+func LegacyHandler(ctx context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 
-		response := HelloResponse{
-			Message: helloMessage,
+		urlParam := req.URL.Query().Get("url")
+
+		if urlParam == "" {
+			err := errors.New("url parameter not found")
+			log.Error(ctx, "url parameter not found", err)
+			http.Error(w, "URL not found", http.StatusNotFound)
+			return
+		}
+
+		response := LegacyResponse{
+			URL: urlParam,
 		}
 
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
