@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/ONSdigital/dp-articles-api/api"
 	"github.com/ONSdigital/dp-articles-api/config"
 	"github.com/ONSdigital/dp-healthcheck/healthcheck"
 )
@@ -15,6 +16,7 @@ import (
 // Initialiser defines the methods to initialise external services
 type Initialiser interface {
 	DoGetHTTPServer(bindAddr string, router http.Handler) HTTPServer
+	DoGetZebedeeClient(url string) api.ZebedeeClient
 	DoGetHealthCheck(cfg *config.Config, buildTime, gitCommit, version string) (HealthChecker, error)
 }
 

@@ -32,10 +32,10 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 
 	s := serviceList.GetHTTPServer(cfg.BindAddr, r)
 
-	// TODO: Add other(s) to serviceList here
+	zc := serviceList.GetZebedeeClient(cfg.APIRouterURL)
 
 	// Setup the API
-	a := api.Setup(ctx, r)
+	a := api.Setup(ctx, r, zc)
 
 	hc, err := serviceList.GetHealthCheck(cfg, buildTime, gitCommit, version)
 
@@ -44,7 +44,7 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 		return nil, err
 	}
 
-	if err := registerCheckers(ctx, hc); err != nil {
+	if err := registerCheckers(ctx, hc, zc); err != nil {
 		return nil, errors.Wrap(err, "unable to register checkers")
 	}
 
@@ -114,10 +114,17 @@ func (svc *Service) Close(ctx context.Context) error {
 	return nil
 }
 
-func registerCheckers(ctx context.Context,
-	hc HealthChecker) (err error) {
+func registerCheckers(ctx context.Context, hc HealthChecker, zc api.ZebedeeClient) (err error) {
+	hasErrors := false
 
-	// TODO: add other health checks here, as per dp-upload-service
+	if err = hc.AddCheck("Zebedee", zc.Checker); err != nil {
+		hasErrors = true
+		log.Error(ctx, "failed to add Zebedee checker", err)
+	}
+
+	if hasErrors {
+		return errors.New("Error(s) registering checkers for healthcheck")
+	}
 
 	return nil
 }

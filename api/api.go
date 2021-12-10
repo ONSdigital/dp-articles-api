@@ -12,11 +12,11 @@ type API struct {
 }
 
 //Setup function sets up the api and returns an api
-func Setup(ctx context.Context, r *mux.Router) *API {
+func Setup(ctx context.Context, r *mux.Router, zc ZebedeeClient) *API {
 	api := &API{
 		Router: r,
 	}
 
-	r.HandleFunc("/legacy", LegacyHandler(ctx)).Methods("GET")
+	r.HandleFunc("/legacy", LegacyHandler(ctx, zc)).Methods("GET")
 	return api
 }

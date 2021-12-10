@@ -5,15 +5,24 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/ONSdigital/dp-api-clients-go/v2/zebedee"
+
 	"github.com/gorilla/mux"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestSetup(t *testing.T) {
+
 	Convey("Given an API instance", t, func() {
 		r := mux.NewRouter()
 		ctx := context.Background()
-		api := Setup(ctx, r)
+
+		mockZebedeeClient := &ZebedeeClientMock{
+			GetBulletinFunc: func(ctx context.Context, userAccessToken string, lang string, uri string) (zebedee.Bulletin, error) {
+				return zebedee.Bulletin{}, nil
+			},
+		}
+		api := Setup(ctx, r, mockZebedeeClient)
 
 		Convey("When created the following routes should have been added", func() {
 			So(hasRoute(api.Router, "/legacy", "GET"), ShouldBeTrue)

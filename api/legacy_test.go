@@ -2,27 +2,45 @@ package api
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/ONSdigital/dp-api-clients-go/v2/zebedee"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestLegacyHandler(t *testing.T) {
 
 	Convey("Given a Legacy handler ", t, func() {
-		handler := LegacyHandler(context.Background())
+		url := "/gdp/economy"
+		b := zebedee.Bulletin{URI: url, Description: zebedee.Description{Title: "Test"}}
+		mockZebedeeClient := &ZebedeeClientMock{
+			GetBulletinFunc: func(ctx context.Context, userAccessToken string, lang string, uri string) (zebedee.Bulletin, error) {
+				return b, nil
+			},
+		}
+		handler := LegacyHandler(context.Background(), mockZebedeeClient)
 
 		Convey("when a valid request is received", func() {
-			req := httptest.NewRequest("GET", "http://localhost:8080/legacy?url=/gdp/economy", nil)
+			req := httptest.NewRequest("GET", fmt.Sprintf("http://localhost:8080/legacy?url=%s", url), nil)
 			resp := httptest.NewRecorder()
 
 			handler.ServeHTTP(resp, req)
 
-			Convey("Then the response is correct", func() {
+			Convey("Then the call to Zebedee is correct", func() {
+				So(len(mockZebedeeClient.GetBulletinCalls()), ShouldEqual, 1)
+				So(mockZebedeeClient.GetBulletinCalls()[0].UserAccessToken, ShouldEqual, "")
+				So(mockZebedeeClient.GetBulletinCalls()[0].Lang, ShouldEqual, "en")
+				So(mockZebedeeClient.GetBulletinCalls()[0].URI, ShouldEqual, url)
+			})
+			Convey("And the response is correct", func() {
 				So(resp.Code, ShouldEqual, http.StatusOK)
-				So(resp.Body.String(), ShouldResemble, `{"url":"/gdp/economy"}`)
+				expectedJson, _ := json.Marshal(b)
+				So(resp.Body.Bytes(), ShouldResemble, expectedJson)
+				So(len(mockZebedeeClient.GetBulletinCalls()), ShouldEqual, 1)
 			})
 		})
 

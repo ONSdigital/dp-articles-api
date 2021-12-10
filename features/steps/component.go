@@ -2,10 +2,14 @@ package steps
 
 import (
 	"context"
+	"errors"
+	"net/http"
+
+	"github.com/ONSdigital/dp-api-clients-go/v2/zebedee"
+	"github.com/ONSdigital/dp-articles-api/api"
 	"github.com/ONSdigital/dp-articles-api/config"
 	"github.com/ONSdigital/dp-articles-api/service"
 	"github.com/ONSdigital/dp-articles-api/service/mock"
-	"net/http"
 
 	componenttest "github.com/ONSdigital/dp-component-test"
 	"github.com/ONSdigital/dp-healthcheck/healthcheck"
@@ -38,8 +42,9 @@ func NewComponent() (*Component, error) {
 	}
 
 	initMock := &mock.InitialiserMock{
-		DoGetHealthCheckFunc: c.DoGetHealthcheckOk,
-		DoGetHTTPServerFunc:  c.DoGetHTTPServer,
+		DoGetHTTPServerFunc:    c.DoGetHTTPServer,
+		DoGetHealthCheckFunc:   c.DoGetHealthcheckOk,
+		DoGetZebedeeClientFunc: c.DoGetZebedeeClient,
 	}
 
 	c.svcList = service.NewServiceList(initMock)
@@ -78,6 +83,7 @@ func (c *Component) DoGetHealthcheckOk(cfg *config.Config, buildTime string, git
 		AddCheckFunc: func(name string, checker healthcheck.Checker) error { return nil },
 		StartFunc:    func(ctx context.Context) {},
 		StopFunc:     func() {},
+		HandlerFunc:  func(w http.ResponseWriter, req *http.Request) {},
 	}, nil
 }
 
@@ -85,4 +91,63 @@ func (c *Component) DoGetHTTPServer(bindAddr string, router http.Handler) servic
 	c.HTTPServer.Addr = bindAddr
 	c.HTTPServer.Handler = router
 	return c.HTTPServer
+}
+
+func (c *Component) DoGetZebedeeClient(url string) api.ZebedeeClient {
+	return &api.ZebedeeClientMock{
+		GetBulletinFunc: func(ctx context.Context, userAccessToken string, lang string, uri string) (zebedee.Bulletin, error) {
+			if uri == "/gdp/economy" {
+				return zebedee.Bulletin{
+					URI:  uri,
+					Type: "bulletin",
+					Description: zebedee.Description{
+						Title:           "Bulletin test",
+						Summary:         "Test summary",
+						MetaDescription: "Desc",
+						Contact: zebedee.Contact{
+							Email:     "contact@ons.gov.uk",
+							Name:      "Contact name",
+							Telephone: "029",
+						},
+						NationalStatistic: true,
+						LatestRelease:     true,
+						Keywords:          []string{"economy", "gdp"},
+						Edition:           "2020",
+						ReleaseDate:       "2020-07-08T23:00:00.000Z",
+					},
+					Sections: []zebedee.Section{
+						{
+							Title:    "Section 1",
+							Markdown: "Markdown 1",
+						},
+						{
+							Title:    "Section 2",
+							Markdown: "Markdown 2",
+						},
+					},
+					Accordion: []zebedee.Section{
+						{
+							Title:    "Notes",
+							Markdown: "Accordion text",
+						},
+					},
+					RelatedBulletins: []zebedee.Link{
+						{
+							Title: "other bulletin",
+							URI:   "bulletin/uri",
+						},
+					},
+					Tables: []zebedee.Figure{
+						{
+							Title:    "Table 1.1",
+							Filename: "table1",
+							Version:  "1",
+							URI:      "table/1",
+						},
+					},
+				}, nil
+			}
+			return zebedee.Bulletin{}, errors.New("Unsupported endpoint")
+		},
+	}
 }

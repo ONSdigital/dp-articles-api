@@ -9,11 +9,13 @@ import (
 	"github.com/ONSdigital/log.go/v2/log"
 )
 
-type LegacyResponse struct {
-	URL string `json:"url,omitempty"`
+// ClientError is an interface that can be used to retrieve the status code if a client has errored
+type ClientError interface {
+	Error() string
+	Code() int
 }
 
-func LegacyHandler(ctx context.Context) http.HandlerFunc {
+func LegacyHandler(ctx context.Context, zc ZebedeeClient) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 
@@ -26,23 +28,37 @@ func LegacyHandler(ctx context.Context) http.HandlerFunc {
 			return
 		}
 
-		response := LegacyResponse{
-			URL: urlParam,
+		lang := "en"
+		userAccessToken := ""
+
+		response, err := zc.GetBulletin(ctx, userAccessToken, lang, urlParam)
+		if err != nil {
+			setStatusCode(req, w, "retrieving bulletin from Zebedee", err)
+			return
 		}
 
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.Header().Set("Content-Type", "application/json")
 		jsonResponse, err := json.Marshal(response)
 		if err != nil {
-			log.Error(ctx, "marshalling response failed", err)
-			http.Error(w, "Failed to marshall json response", http.StatusInternalServerError)
+			setStatusCode(req, w, "marshalling response failed", err)
 			return
 		}
 
 		_, err = w.Write(jsonResponse)
 		if err != nil {
-			log.Error(ctx, "writing response failed", err)
-			http.Error(w, "Failed to write http response", http.StatusInternalServerError)
+			setStatusCode(req, w, "writing response failed", err)
 			return
 		}
 	}
+}
+
+func setStatusCode(req *http.Request, w http.ResponseWriter, msg string, err error) {
+	status := http.StatusInternalServerError
+	if err, ok := err.(ClientError); ok {
+		if err.Code() == http.StatusNotFound {
+			status = err.Code()
+		}
+	}
+	log.Error(req.Context(), msg, err)
+	w.WriteHeader(status)
 }

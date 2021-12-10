@@ -10,29 +10,32 @@ basePath: "/v1"
 schemes:
   - http
 tags:
-  - name: "hello"
-  - name: "private"
+  - name: "public"
 paths:
-  /hello:
+  /legacy:
     get:
       tags:
-        - hello
-      summary: Example hello world endpoint
-      description: Returns an example payload.
+        - public
+      summary: "Get a legacy bulletin"
+      description: "Returns a bulletin stored in Zebedee"
+      parameters:
+        - $ref: '#/parameters/url'
       produces:
         - application/json
       responses:
         200:
           description: OK
           schema:
-            $ref: "#/definitions/HelloResponse"
+            $ref: "#/definitions/Bulletin"
+        404:
+           $ref: '#/responses/NotFound'
         500:
           $ref: '#/responses/InternalError'
 
   /health:
     get:
       tags:
-        - private
+        - public
       summary: "Returns API's health status"
       description: "Returns health status of the API and checks on dependent services"
       produces:
@@ -50,15 +53,131 @@ paths:
 responses:
   InternalError:
     description: "Failed to process the request due to an internal error"
+  NotFound:
+    description: "URL not found"
+
+parameters:
+  url:
+    name: url
+    description: The url for the legacy bulletin.
+    type: string
+    required: true
+    in: query
 
 definitions:
-  HelloResponse:
+  Bulletin:
     type: object
     properties:
-      message:
+      relatedBulletins:
+        type: array
+        items:
+         $ref: '#/definitions/Link'
+      sections:
+        type: array
+        items:
+         $ref: '#/definitions/Section'
+      accordion:
+        type: array
+        items:
+         $ref: '#/definitions/Section'
+      relatedData:
+        type: array
+        items:
+         $ref: '#/definitions/Link'
+      charts:
+        type: array
+        items:
+         $ref: '#/definitions/Figure'
+      tables:
+        type: array
+        items:
+         $ref: '#/definitions/Figure'
+      images:
+        type: array
+        items:
+         $ref: '#/definitions/Figure'
+      equations:
+        type: array
+        items:
+         $ref: '#/definitions/Figure'
+      links:
+        type: array
+        items:
+         $ref: '#/definitions/Link'
+      type:
         type: string
-        description: "Message returned by hello world endpoint"
-        example: "Hello, world!"
+        example: "bulletin"
+      uri:
+        type: string
+        example: "/economy/environmentalaccounts/bulletins/ukenvironmentalaccounts/2015-07-09"
+      description:
+        type: object
+        properties:
+          title:
+            type: string
+          edition:
+            type: string
+          summary:
+            type: string
+          keywords:
+            type: array
+            items:
+              type: string
+          metaDescription:
+            type: string
+          nationalStatistic:
+            type: boolean
+          latestRelease:
+            type: boolean
+      versions:
+        type: array
+        items:
+          type: object
+          properties:
+            uri:
+              type: string
+            updateDate:
+              type: string
+            correctionNotice:
+              type: string
+            label:
+              type: string
+      alerts:
+        type: array
+        items:
+          type: object
+          properties:
+            date:
+              type: string
+            type:
+              type: string
+            markdown:
+              type: string
+      latestReleaseUri:
+        type: string
+      contact:
+        type: object
+        properties:
+          name:
+            type: string
+          email:
+            type: string
+          telephone:
+            type: string
+      releaseDate:
+        type: string
+      nextRelease:
+        type: string
+      datasetId:
+        type: string
+      unit:
+        type: string
+      preUnit:
+        type: string
+      source:
+        type: string
+      versionLabel:
+        type: string
   Health:
     type: object
     properties:
@@ -101,6 +220,39 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/HealthChecker'
+  Link:
+    type: object
+    properties:
+      title:
+        type: string
+        description: "Title"
+      uri:
+        type: string
+        description: "URI"
+  Section:
+    type: object
+    properties:
+      title:
+        type: string
+        description: "Title"
+      markdown:
+        type: string
+        description: "Markdown text"
+  Figure:
+    type: object
+    properties:
+      title:
+        type: string
+        description: "Title"
+      filename:
+        type: string
+        description: "File name"
+      version:
+        type: string
+        description: "Version"
+      uri:
+        type: string
+        description: "URI"  
   HealthChecker:
     type: object
     properties:
