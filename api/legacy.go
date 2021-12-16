@@ -6,6 +6,7 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/ONSdigital/dp-api-clients-go/v2/zebedee"
 	"github.com/ONSdigital/log.go/v2/log"
 )
 
@@ -27,26 +28,31 @@ func LegacyHandler(ctx context.Context, zc ZebedeeClient) http.HandlerFunc {
 
 		response, err := zc.GetBulletin(ctx, userAccessToken, lang, urlParam)
 		if err != nil {
-			setStatusCode(ctx, w, "retrieving bulletin from Zebedee", err)
+			statusCode := http.StatusInternalServerError
+			var e zebedee.ErrInvalidZebedeeResponse
+			if errors.As(err, &e) {
+				statusCode = e.ActualCode
+			}
+			setStatusCode(ctx, w, statusCode, "retrieving bulletin from Zebedee", err)
 			return
 		}
 
 		w.Header().Set("Content-Type", "application/json")
 		jsonResponse, err := json.Marshal(response)
 		if err != nil {
-			setStatusCode(ctx, w, "marshalling response failed", err)
+			setStatusCode(ctx, w, http.StatusInternalServerError, "marshalling response failed", err)
 			return
 		}
 
 		_, err = w.Write(jsonResponse)
 		if err != nil {
-			setStatusCode(ctx, w, "writing response failed", err)
+			setStatusCode(ctx, w, http.StatusInternalServerError, "writing response failed", err)
 			return
 		}
 	}
 }
 
-func setStatusCode(ctx context.Context, w http.ResponseWriter, msg string, err error) {
+func setStatusCode(ctx context.Context, w http.ResponseWriter, statusCode int, msg string, err error) {
 	log.Error(ctx, msg, err)
-	w.WriteHeader(http.StatusInternalServerError)
+	w.WriteHeader(statusCode)
 }
