@@ -23,7 +23,7 @@ var _ ZebedeeClient = &ZebedeeClientMock{}
 // 			CheckerFunc: func(ctx context.Context, check *healthcheck.CheckState) error {
 // 				panic("mock out the Checker method")
 // 			},
-// 			GetBulletinFunc: func(ctx context.Context, userAccessToken string, lang string, uri string) (zebedee.Bulletin, error) {
+// 			GetBulletinFunc: func(ctx context.Context, userAccessToken string, collectionID string, lang string, uri string) (zebedee.Bulletin, error) {
 // 				panic("mock out the GetBulletin method")
 // 			},
 // 		}
@@ -37,7 +37,7 @@ type ZebedeeClientMock struct {
 	CheckerFunc func(ctx context.Context, check *healthcheck.CheckState) error
 
 	// GetBulletinFunc mocks the GetBulletin method.
-	GetBulletinFunc func(ctx context.Context, userAccessToken string, lang string, uri string) (zebedee.Bulletin, error)
+	GetBulletinFunc func(ctx context.Context, userAccessToken string, collectionID string, lang string, uri string) (zebedee.Bulletin, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -54,6 +54,8 @@ type ZebedeeClientMock struct {
 			Ctx context.Context
 			// UserAccessToken is the userAccessToken argument value.
 			UserAccessToken string
+			// CollectionID is the collectionID argument value.
+			CollectionID string
 			// Lang is the lang argument value.
 			Lang string
 			// URI is the uri argument value.
@@ -100,25 +102,27 @@ func (mock *ZebedeeClientMock) CheckerCalls() []struct {
 }
 
 // GetBulletin calls GetBulletinFunc.
-func (mock *ZebedeeClientMock) GetBulletin(ctx context.Context, userAccessToken string, lang string, uri string) (zebedee.Bulletin, error) {
+func (mock *ZebedeeClientMock) GetBulletin(ctx context.Context, userAccessToken string, collectionID string, lang string, uri string) (zebedee.Bulletin, error) {
 	if mock.GetBulletinFunc == nil {
 		panic("ZebedeeClientMock.GetBulletinFunc: method is nil but ZebedeeClient.GetBulletin was just called")
 	}
 	callInfo := struct {
 		Ctx             context.Context
 		UserAccessToken string
+		CollectionID    string
 		Lang            string
 		URI             string
 	}{
 		Ctx:             ctx,
 		UserAccessToken: userAccessToken,
+		CollectionID:    collectionID,
 		Lang:            lang,
 		URI:             uri,
 	}
 	mock.lockGetBulletin.Lock()
 	mock.calls.GetBulletin = append(mock.calls.GetBulletin, callInfo)
 	mock.lockGetBulletin.Unlock()
-	return mock.GetBulletinFunc(ctx, userAccessToken, lang, uri)
+	return mock.GetBulletinFunc(ctx, userAccessToken, collectionID, lang, uri)
 }
 
 // GetBulletinCalls gets all the calls that were made to GetBulletin.
@@ -127,12 +131,14 @@ func (mock *ZebedeeClientMock) GetBulletin(ctx context.Context, userAccessToken 
 func (mock *ZebedeeClientMock) GetBulletinCalls() []struct {
 	Ctx             context.Context
 	UserAccessToken string
+	CollectionID    string
 	Lang            string
 	URI             string
 } {
 	var calls []struct {
 		Ctx             context.Context
 		UserAccessToken string
+		CollectionID    string
 		Lang            string
 		URI             string
 	}

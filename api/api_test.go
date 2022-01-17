@@ -18,7 +18,7 @@ func TestSetup(t *testing.T) {
 		ctx := context.Background()
 
 		mockZebedeeClient := &ZebedeeClientMock{
-			GetBulletinFunc: func(ctx context.Context, userAccessToken string, lang string, uri string) (zebedee.Bulletin, error) {
+			GetBulletinFunc: func(ctx context.Context, userAccessToken, collectionID, lang, uri string) (zebedee.Bulletin, error) {
 				return zebedee.Bulletin{}, nil
 			},
 		}

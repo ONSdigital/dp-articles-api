@@ -95,7 +95,7 @@ func (c *Component) DoGetHTTPServer(bindAddr string, router http.Handler) servic
 
 func (c *Component) DoGetZebedeeClient(url string) api.ZebedeeClient {
 	return &api.ZebedeeClientMock{
-		GetBulletinFunc: func(ctx context.Context, userAccessToken string, lang string, uri string) (zebedee.Bulletin, error) {
+		GetBulletinFunc: func(ctx context.Context, userAccessToken, collectionID, lang, uri string) (zebedee.Bulletin, error) {
 			if uri == "/gdp/economy" {
 				return zebedee.Bulletin{
 					URI:  uri,

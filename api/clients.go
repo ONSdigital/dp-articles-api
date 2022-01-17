@@ -12,6 +12,6 @@ import (
 
 // ZebedeeClient defines the required methods to talk to Zebedee
 type ZebedeeClient interface {
-	GetBulletin(ctx context.Context, userAccessToken, lang, uri string) (zebedee.Bulletin, error)
+	GetBulletin(ctx context.Context, userAccessToken, collectionID, lang, uri string) (zebedee.Bulletin, error)
 	Checker(ctx context.Context, check *healthcheck.CheckState) error
 }
