@@ -25,7 +25,7 @@ func TestLegacyHandler(t *testing.T) {
 		handler := LegacyHandler(context.Background(), mockZebedeeClient)
 
 		Convey("when a valid request is received", func() {
-			req := httptest.NewRequest("GET", fmt.Sprintf("http://localhost:8080/legacy?url=%s", url), nil)
+			req := httptest.NewRequest("GET", fmt.Sprintf("http://localhost:8080/articles/legacy?url=%s", url), nil)
 			resp := httptest.NewRecorder()
 
 			handler.ServeHTTP(resp, req)
@@ -45,7 +45,7 @@ func TestLegacyHandler(t *testing.T) {
 		})
 
 		Convey("when a request without an url parameter is received", func() {
-			req := httptest.NewRequest("GET", "http://localhost:8080/legacy", nil)
+			req := httptest.NewRequest("GET", "http://localhost:8080/articles/legacy", nil)
 			resp := httptest.NewRecorder()
 
 			handler.ServeHTTP(resp, req)
@@ -57,7 +57,7 @@ func TestLegacyHandler(t *testing.T) {
 		})
 
 		Convey("when a request with an empty url parameter is received", func() {
-			req := httptest.NewRequest("GET", "http://localhost:8080/legacy?url=", nil)
+			req := httptest.NewRequest("GET", "http://localhost:8080/articles/legacy?url=", nil)
 			resp := httptest.NewRecorder()
 
 			handler.ServeHTTP(resp, req)
