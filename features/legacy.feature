@@ -1,8 +1,12 @@
 Feature: Legacy endpoint
 
   Scenario: Call the legacy endpoint without an url parameter
-    When I GET "/legacy"
+    When I GET "/articles/legacy"
     Then the HTTP status code should be "404"
+    And I should receive the following response:
+    """
+    URL not found
+    """
 
  Scenario: Call the legacy endpoint with a valid url parameter
     When I GET "/articles/legacy?url=/gdp/economy"
