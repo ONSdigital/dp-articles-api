@@ -12,7 +12,7 @@ schemes:
 tags:
   - name: "public"
 paths:
-  /legacy:
+  /articles/legacy:
     get:
       tags:
         - public
