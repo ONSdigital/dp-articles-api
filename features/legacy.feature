@@ -1,7 +1,7 @@
 Feature: Legacy endpoint
 
   Scenario: Call the legacy endpoint without an url parameter
-    When I GET "/articles/legacy"
+    When I GET "/v1/articles/legacy"
     Then the HTTP status code should be "404"
     And I should receive the following response:
     """
@@ -9,7 +9,7 @@ Feature: Legacy endpoint
     """
 
  Scenario: Call the legacy endpoint with a valid url parameter
-    When I GET "/articles/legacy?url=/gdp/economy"
+    When I GET "/v1/articles/legacy?url=/gdp/economy"
     And I should receive the following JSON response with status "200":
         """
         {
@@ -78,5 +78,5 @@ Feature: Legacy endpoint
         """
 
   Scenario: Call the legacy endpoint with an invalid url parameter
-    When I GET "/articles/legacy?url=/gdp/invalid"
+    When I GET "/v1/articles/legacy?url=/gdp/invalid"
     Then the HTTP status code should be "500"
