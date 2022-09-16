@@ -33,6 +33,8 @@ Feature: Legacy endpoint
               "latestRelease":true, 
               "metaDescription":"Desc", 
               "nationalStatistic":true, 
+              "welshStatistic":true, 
+              "survey":"census",
               "nextRelease":"", 
               "preUnit":"", 
               "releaseDate":"2020-07-08T23:00:00.000Z", 

@@ -110,10 +110,12 @@ func (c *Component) DoGetZebedeeClient(url string) api.ZebedeeClient {
 							Telephone: "029",
 						},
 						NationalStatistic: true,
+						WelshStatistic:    true,
 						LatestRelease:     true,
 						Keywords:          []string{"economy", "gdp"},
 						Edition:           "2020",
 						ReleaseDate:       "2020-07-08T23:00:00.000Z",
+						Survey:            "census",
 					},
 					Sections: []zebedee.Section{
 						{
