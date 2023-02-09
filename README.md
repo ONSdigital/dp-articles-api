@@ -1,3 +1,10 @@
+
+---
+
+:warning: This repository will be archived in February 2023 as it is not currently in development. :warning:
+
+---
+
 # dp-articles-api
 Articles API for ONS Digital Publishing
 
